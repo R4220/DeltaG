@@ -66,6 +66,10 @@ output:
   write_summary: true
 ```
 
+Per il workflow `periodic`, puoi anche aggiungere un blocco opzionale `qha`
+per lanciare in fondo il post-processing di un `phonopy-qha.out` gia'
+esistente.
+
 ## Significato dei blocchi comuni
 
 ### `mode`
@@ -176,6 +180,11 @@ periodic:
     t_min: 0.0
     t_max: 1000.0
     t_step: 50.0
+
+qha:
+  enabled: false
+  phonopy_qha: phonopy-qha.out
+  output_dir: qha_tables
 ```
 
 ### Nota su `structure`
@@ -312,6 +321,11 @@ plots:
 output:
   dir: bulk_results
   write_summary: true
+
+qha:
+  enabled: false
+  phonopy_qha: phonopy-qha.out
+  output_dir: qha_tables
 
 periodic:
   kind: bulk

@@ -15,6 +15,7 @@ PATH_LIKE_KEYS = {
     "model_path",
     "output_dir",
     "phonopy_qha",
+    "qha_output_dir",
     "qha_summary",
 }
 
@@ -80,12 +81,13 @@ def normalize_periodic_config(config):
     """Normalize the nested periodic config into flat CLI keys."""
     validate_allowed_keys(
         config,
-        {"mode", "model", "thermo", "plots", "output", "periodic"},
+        {"mode", "model", "thermo", "plots", "output", "periodic", "qha"},
         "top-level periodic config",
     )
 
     model = require_mapping(config, "model")
     periodic = require_mapping(config, "periodic")
+    qha = optional_mapping(config, "qha")
     thermo = optional_mapping(config, "thermo")
     plots = optional_mapping(config, "plots")
     output = optional_mapping(config, "output")
@@ -95,6 +97,7 @@ def normalize_periodic_config(config):
     temperature_grid = optional_mapping(periodic, "temperature_grid")
 
     validate_allowed_keys(model, {"path", "device"}, "model")
+    validate_allowed_keys(qha, {"enabled", "phonopy_qha", "qha_summary", "output_dir"}, "qha")
     validate_allowed_keys(thermo, {"temperature", "pressure"}, "thermo")
     validate_allowed_keys(
         plots,
@@ -134,6 +137,16 @@ def normalize_periodic_config(config):
     flat = {"command": "bulk"}
 
     copy_mapping(flat, model, {"path": "model_path", "device": "device"})
+    copy_mapping(
+        flat,
+        qha,
+        {
+            "enabled": "qha",
+            "phonopy_qha": "phonopy_qha",
+            "qha_summary": "qha_summary",
+            "output_dir": "qha_output_dir",
+        },
+    )
     copy_mapping(flat, thermo, {"temperature": "temperature", "pressure": "pressure"})
     copy_mapping(flat, output, {"dir": "output_dir"})
     copy_mapping(

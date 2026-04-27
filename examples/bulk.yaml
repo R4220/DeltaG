@@ -20,6 +20,12 @@ output:
   dir: bulk_results
   write_summary: true
 
+qha:
+  enabled: false
+  phonopy_qha: phonopy-qha.out
+  qha_summary: qha_summary.out
+  output_dir: qha_tables
+
 periodic:
   kind: bulk
 

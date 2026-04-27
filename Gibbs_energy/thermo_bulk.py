@@ -12,6 +12,7 @@ It does not perform thermal expansion. For that, the QHA workflow should be
 used as a later step.
 """
 
+from argparse import Namespace
 from pathlib import Path
 
 import numpy as np
@@ -24,6 +25,7 @@ from .calculators import setup_calculator
 from .constants import PRESSURE_GPA_TO_EV_A3
 from .io_utils import write_output
 from .phonons_bulk import plot_phonon_bs_and_dos, run_phonons
+from .qha_post import run_qha_post
 from .structures import build_structure, formula_strings, infer_formula_units
 
 
@@ -148,6 +150,44 @@ def write_bulk_temperature_table(
             )
 
 
+def maybe_run_qha_post(args, output_dir, formula_units):
+    """Optionally run QHA post-processing after the bulk workflow."""
+    if not getattr(args, "qha", False):
+        return None, None
+
+    if args.phonopy_qha is None:
+        raise ValueError(
+            "Bulk workflow with qha enabled requires phonopy-qha.out via qha.phonopy_qha or --phonopy-qha."
+        )
+
+    qha_output_dir = output_dir / "qha_tables"
+    if args.qha_output_dir is not None:
+        qha_output_dir = Path(args.qha_output_dir)
+
+    qha_summary_path = args.qha_summary
+    if qha_summary_path is not None:
+        qha_summary_path = Path(qha_summary_path)
+
+    if qha_summary_path is None or not qha_summary_path.exists():
+        if qha_summary_path is None:
+            qha_summary_path = output_dir / "qha_summary.out"
+        write_output(
+            qha_summary_path,
+            [
+                f"pressure_GPa: {args.pressure}",
+                f"formula_units: {formula_units}",
+            ],
+        )
+
+    qha_args = Namespace(
+        phonopy_qha=args.phonopy_qha,
+        qha_summary=str(qha_summary_path),
+        output_dir=str(qha_output_dir),
+    )
+    run_qha_post(qha_args)
+    return qha_output_dir, Path(qha_args.qha_summary)
+
+
 def run_bulk(args):
     """Run the complete bulk ASE/MACE phonon thermochemistry workflow."""
     output_dir = Path(args.output_dir)
@@ -226,6 +266,12 @@ def run_bulk(args):
         volume_total=volume_total,
     )
 
+    qha_output_dir, qha_summary_path = maybe_run_qha_post(
+        args=args,
+        output_dir=output_dir,
+        formula_units=formula_units,
+    )
+
     cell_formula, reduced_formula = formula_strings(atoms, formula_units)
 
     output_lines = [
@@ -268,10 +314,23 @@ def run_bulk(args):
         "Relax trajectory           : relax.traj",
         "Phonon plot                : phonon_BS_and_DOS.png",
         "Temperature table          : bulk_thermo_temperature.dat",
-        "",
-        "[Important note]",
-        "This is a bulk harmonic calculation at fixed cell. For thermal expansion and true G(T,p), use QHA.",
     ]
+
+    if qha_output_dir is not None:
+        output_lines.extend(
+            [
+                f"QHA summary metadata       : {qha_summary_path}",
+                f"QHA tables directory       : {qha_output_dir}",
+            ]
+        )
+
+    output_lines.extend(
+        [
+            "",
+            "[Important note]",
+            "This is a bulk harmonic calculation at fixed cell. For thermal expansion and true G(T,p), use QHA.",
+        ]
+    )
 
     write_output(output_dir / "bulk_summary.out", output_lines)
 

@@ -120,6 +120,11 @@ thermo:
 output:
   dir: bulk_results
 
+qha:
+  enabled: false
+  phonopy_qha: phonopy-qha.out
+  output_dir: qha_tables
+
 periodic:
   kind: bulk
   structure:
@@ -184,6 +189,9 @@ Calcola termodinamica armonica per un cristallo periodico a cella fissa:
 - DOS fononica;
 - quantita' termodinamiche in funzione della temperatura.
 
+Opzionalmente, lo stesso input puo' attivare anche un post-processing QHA finale
+se fornisci un `phonopy-qha.out` gia' esistente nel blocco `qha`.
+
 Help rapido:
 
 ```bash
@@ -208,6 +216,9 @@ Output tipici:
 - `phonon_BS_and_DOS.png`
 - `bulk_thermo_temperature.dat`
 - `bulk_summary.out`
+
+Se `qha.enabled: true`, vengono scritte anche le tabelle QHA nella cartella
+indicata da `qha.output_dir` oppure, di default, in `bulk_results/qha_tables`.
 
 ### 2. `molecule`
 

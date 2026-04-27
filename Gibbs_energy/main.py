@@ -88,6 +88,26 @@ def add_bulk_parser(subparsers):
     parser.add_argument("--t-step", type=float, default=50.0)
 
     parser.add_argument("--output-dir", default="bulk_results")
+    parser.add_argument(
+        "--qha",
+        action="store_true",
+        help="Also run QHA post-processing at the end using an existing phonopy-qha.out file.",
+    )
+    parser.add_argument(
+        "--phonopy-qha",
+        default=None,
+        help="Path to an existing phonopy-qha.out file used when --qha is enabled.",
+    )
+    parser.add_argument(
+        "--qha-summary",
+        default=None,
+        help="Optional qha_summary.out used when --qha is enabled. If omitted, one is generated automatically.",
+    )
+    parser.add_argument(
+        "--qha-output-dir",
+        default=None,
+        help="Optional output directory for QHA tables. Defaults to <bulk output>/qha_tables.",
+    )
 
     parser.set_defaults(func=run_bulk)
 
