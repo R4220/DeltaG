@@ -17,7 +17,7 @@ plots:
   dpi: 200
 
 output:
-  dir: fixed_cell_results
+  dir: bulk_results
   write_summary: true
 
 periodic:

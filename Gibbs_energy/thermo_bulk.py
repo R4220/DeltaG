@@ -1,4 +1,4 @@
-"""Fixed-cell harmonic thermodynamics for periodic bulk systems.
+"""Bulk harmonic thermodynamics for periodic systems.
 
 This module handles the bulk workflow in the harmonic approximation at fixed
 cell shape and volume:
@@ -23,7 +23,7 @@ from ase.thermochemistry import CrystalThermo
 from .calculators import setup_calculator
 from .constants import PRESSURE_GPA_TO_EV_A3
 from .io_utils import write_output
-from .phonons_fixed_cell import plot_phonon_bs_and_dos, run_phonons
+from .phonons_bulk import plot_phonon_bs_and_dos, run_phonons
 from .structures import build_structure, formula_strings, infer_formula_units
 
 
@@ -56,7 +56,7 @@ def crystal_energy_breakdown(phonon_energies, phonon_dos, potentialenergy, formu
     }
 
 
-def compute_fixed_cell_thermo_at_temperature(
+def compute_bulk_thermo_at_temperature(
     thermo,
     phonon_energies,
     phonon_dos,
@@ -66,7 +66,7 @@ def compute_fixed_cell_thermo_at_temperature(
     pressure_gpa,
     volume_total,
 ):
-    """Compute U, S, F, H and G at one temperature for a fixed cell."""
+    """Compute U, S, F, H and G at one temperature for the bulk workflow."""
     energy_terms = crystal_energy_breakdown(
         phonon_energies=phonon_energies,
         phonon_dos=phonon_dos,
@@ -99,7 +99,7 @@ def compute_fixed_cell_thermo_at_temperature(
     }
 
 
-def write_fixed_cell_temperature_table(
+def write_bulk_temperature_table(
     output_path,
     temperatures,
     thermo,
@@ -110,7 +110,7 @@ def write_fixed_cell_temperature_table(
     pressure_gpa,
     volume_total,
 ):
-    """Write fixed-cell U, S, F, H and G as functions of temperature."""
+    """Write bulk U, S, F, H and G as functions of temperature."""
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -122,7 +122,7 @@ def write_fixed_cell_temperature_table(
         )
 
         for temperature in temperatures:
-            result = compute_fixed_cell_thermo_at_temperature(
+            result = compute_bulk_thermo_at_temperature(
                 thermo=thermo,
                 phonon_energies=phonon_energies,
                 phonon_dos=phonon_dos,
@@ -148,8 +148,8 @@ def write_fixed_cell_temperature_table(
             )
 
 
-def run_fixed_cell(args):
-    """Run the complete fixed-cell ASE/MACE phonon thermochemistry workflow."""
+def run_bulk(args):
+    """Run the complete bulk ASE/MACE phonon thermochemistry workflow."""
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -203,8 +203,8 @@ def run_fixed_cell(args):
 
     temperatures = np.arange(args.t_min, args.t_max + args.t_step, args.t_step)
 
-    write_fixed_cell_temperature_table(
-        output_path=output_dir / "fixed_cell_thermo_temperature.dat",
+    write_bulk_temperature_table(
+        output_path=output_dir / "bulk_thermo_temperature.dat",
         temperatures=temperatures,
         thermo=thermo,
         phonon_energies=phonon_energies,
@@ -215,7 +215,7 @@ def run_fixed_cell(args):
         volume_total=volume_total,
     )
 
-    result = compute_fixed_cell_thermo_at_temperature(
+    result = compute_bulk_thermo_at_temperature(
         thermo=thermo,
         phonon_energies=phonon_energies,
         phonon_dos=phonon_dos,
@@ -229,7 +229,7 @@ def run_fixed_cell(args):
     cell_formula, reduced_formula = formula_strings(atoms, formula_units)
 
     output_lines = [
-        "# Fixed-cell harmonic bulk thermochemistry report",
+        "# Bulk harmonic thermochemistry report",
         "",
         "[System]",
         f"Geometry file              : {args.geometry_file}",
@@ -267,12 +267,12 @@ def run_fixed_cell(args):
         "Relax log                  : relax.log",
         "Relax trajectory           : relax.traj",
         "Phonon plot                : phonon_BS_and_DOS.png",
-        "Temperature table          : fixed_cell_thermo_temperature.dat",
+        "Temperature table          : bulk_thermo_temperature.dat",
         "",
         "[Important note]",
-        "This is a fixed-cell harmonic calculation. For thermal expansion and true G(T,p), use QHA.",
+        "This is a bulk harmonic calculation at fixed cell. For thermal expansion and true G(T,p), use QHA.",
     ]
 
-    write_output(output_dir / "fixed_cell_summary.out", output_lines)
+    write_output(output_dir / "bulk_summary.out", output_lines)
 
-    print(f"Fixed-cell thermodynamic summary written to: {output_dir / 'fixed_cell_summary.out'}")
+    print(f"Bulk thermodynamic summary written to: {output_dir / 'bulk_summary.out'}")

@@ -26,8 +26,8 @@ DeltaG/
     ├── main.py
     ├── calculators.py
     ├── structures.py
-    ├── phonons_fixed_cell.py
-    ├── thermo_fixed_cell.py
+    ├── phonons_bulk.py
+    ├── thermo_bulk.py
     ├── molecule_thermo.py
     ├── qha_post.py
     ├── io_utils.py
@@ -84,7 +84,7 @@ python -m Gibbs_energy --help
 Per evitare command line molto lunghe, `deltaG` puo' leggere i parametri da un file di configurazione:
 
 ```bash
-deltaG --config examples/fixed_cell.yaml
+deltaG --config examples/bulk.yaml
 ```
 
 Sono supportati:
@@ -118,7 +118,7 @@ thermo:
   pressure: 0.0
 
 output:
-  dir: fixed_cell_results
+  dir: bulk_results
 
 periodic:
   kind: bulk
@@ -153,7 +153,7 @@ Nota pratica:
 Se vuoi cambiare solo uno o due parametri senza modificare il file, puoi usare override leggeri da riga di comando:
 
 ```bash
-deltaG --config examples/fixed_cell.yaml \
+deltaG --config examples/bulk.yaml \
   --override temperature=500 \
   --override output_dir=run_500K
 ```
@@ -161,20 +161,20 @@ deltaG --config examples/fixed_cell.yaml \
 Gli override accettano anche valori JSON:
 
 ```bash
-deltaG --config examples/fixed_cell.yaml \
+deltaG --config examples/bulk.yaml \
   --override supercell=[4,4,4] \
   --override dos_kpts=[24,24,24]
 ```
 
 Esempi pronti sono disponibili in:
 
-- [examples/fixed_cell.yaml](./examples/fixed_cell.yaml)
+- [examples/bulk.yaml](./examples/bulk.yaml)
 - [examples/molecule.yaml](./examples/molecule.yaml)
 - [examples/qha_post.yaml](./examples/qha_post.yaml)
 
 ## Workflow disponibili
 
-### 1. `fixed-cell`
+### 1. `bulk`
 
 Calcola termodinamica armonica per un cristallo periodico a cella fissa:
 
@@ -187,16 +187,16 @@ Calcola termodinamica armonica per un cristallo periodico a cella fissa:
 Help rapido:
 
 ```bash
-deltaG fixed-cell --help
+deltaG bulk --help
 ```
 
 Esempio minimale da file:
 
 ```bash
-deltaG fixed-cell \
+deltaG bulk \
   --model-path /path/to/model.model \
   --geometry-file structure.xyz \
-  --output-dir fixed_cell_results
+  --output-dir bulk_results
 ```
 
 Output tipici:
@@ -206,8 +206,8 @@ Output tipici:
 - `relax.log`
 - `relax.traj`
 - `phonon_BS_and_DOS.png`
-- `fixed_cell_thermo_temperature.dat`
-- `fixed_cell_summary.out`
+- `bulk_thermo_temperature.dat`
+- `bulk_summary.out`
 
 ### 2. `molecule`
 
@@ -294,7 +294,7 @@ Questo dovrebbe rendere piu' semplice:
 
 ## Limitazioni attuali
 
-- `fixed-cell` non include espansione termica: per quello serve la QHA.
+- `bulk` non include espansione termica: per quello serve la QHA.
 - `molecule` e' appropriato per molecole isolate in fase gas, non per specie adsorbite.
 - L'installazione di `mace-torch` puo' dipendere dall'ambiente di calcolo.
 - Non ci sono ancora test automatici e casi esempio completi inclusi nel repository.

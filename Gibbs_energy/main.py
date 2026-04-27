@@ -2,7 +2,7 @@
 
 The current CLI exposes three independent workflows:
 
-- ``fixed-cell`` for harmonic bulk thermodynamics at fixed volume/cell;
+- ``bulk`` for harmonic bulk thermodynamics at fixed volume/cell;
 - ``molecule`` for ideal-gas thermochemistry of isolated molecules;
 - ``qha-post`` for post-processing external phonopy-QHA results.
 """
@@ -12,7 +12,7 @@ import json
 
 from .config_utils import apply_overrides, build_argv_from_config, load_config_file
 from .qha_post import run_qha_post
-from .thermo_fixed_cell import run_fixed_cell
+from .thermo_bulk import run_bulk
 from .molecule_thermo import run_molecule
 
 
@@ -36,11 +36,11 @@ def build_bootstrap_parser():
     return parser
 
 
-def add_fixed_cell_parser(subparsers):
-    """Add command-line options for the fixed-cell workflow."""
+def add_bulk_parser(subparsers):
+    """Add command-line options for the bulk workflow."""
     parser = subparsers.add_parser(
-        "fixed-cell",
-        help="Run ASE/MACE fixed-cell phonon thermochemistry.",
+        "bulk",
+        help="Run ASE/MACE bulk phonon thermochemistry.",
     )
 
     parser.add_argument("--model-path", required=True, help="Path to the MACE model.")
@@ -87,9 +87,9 @@ def add_fixed_cell_parser(subparsers):
     parser.add_argument("--t-max", type=float, default=1000.0)
     parser.add_argument("--t-step", type=float, default=50.0)
 
-    parser.add_argument("--output-dir", default="fixed_cell_results")
+    parser.add_argument("--output-dir", default="bulk_results")
 
-    parser.set_defaults(func=run_fixed_cell)
+    parser.set_defaults(func=run_bulk)
 
 
 def add_qha_post_parser(subparsers):
@@ -182,13 +182,13 @@ def build_workflow_parser(bootstrap_parser):
     """Build the main workflow parser used by both direct CLI and config mode."""
     parser = argparse.ArgumentParser(
         parents=[bootstrap_parser],
-        description="Bulk thermochemistry workflows: fixed-cell ASE/MACE and QHA post-processing."
+        description="Bulk thermochemistry workflows: bulk ASE/MACE and QHA post-processing."
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Each subparser defines one scientific workflow with its own parameters.
-    add_fixed_cell_parser(subparsers)
+    add_bulk_parser(subparsers)
     add_qha_post_parser(subparsers)
     add_molecule_parser(subparsers)
 

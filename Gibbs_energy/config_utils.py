@@ -131,7 +131,7 @@ def normalize_periodic_config(config):
             "periodic.structure must define either geometry_file or lattice_geometry/lattice_basis, not both."
         )
 
-    flat = {"command": "fixed-cell"}
+    flat = {"command": "bulk"}
 
     copy_mapping(flat, model, {"path": "model_path", "device": "device"})
     copy_mapping(flat, thermo, {"temperature": "temperature", "pressure": "pressure"})

@@ -11,7 +11,7 @@ Trasformare questa cartella in un piccolo programma autosufficiente per termochi
 La struttura del codice e gia' abbastanza buona:
 
 - `main.py` espone una CLI con tre sottocomandi;
-- `thermo_fixed_cell.py` contiene il workflow bulk;
+- `thermo_bulk.py` contiene il workflow bulk;
 - `molecule_thermo.py` contiene il workflow molecolare;
 - `qha_post.py` contiene il post-processing QHA;
 - `structures.py`, `calculators.py`, `io_utils.py`, `constants.py` fanno da supporto.
@@ -62,7 +62,7 @@ In pratica, il progetto e' gia' un prototipo funzionante, ma non ancora un progr
 - Decidere chiaramente cosa viene riportato per cella e cosa per formula unitaria.
 - Documentare i limiti del metodo:
   - harmonic approximation;
-  - fixed-cell vs QHA;
+  - bulk vs QHA;
   - validita' di `IdealGasThermo` solo per molecole isolate.
 
 ### 6. Test automatici

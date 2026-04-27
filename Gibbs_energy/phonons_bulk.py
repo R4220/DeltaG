@@ -1,4 +1,4 @@
-"""Phonon utilities for fixed-cell bulk calculations.
+"""Phonon utilities for bulk calculations.
 
 The functions here wrap ASE's finite-displacement phonon machinery and keep
 all phonon-specific file handling away from the higher-level thermodynamic
