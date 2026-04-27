@@ -9,7 +9,14 @@ L'idea e' separare:
 - i parametri termodinamici;
 - le opzioni di plotting e output.
 
-Questa proposta e' pensata come schema "v2" dei config file. I file in `examples/` attuali restano utili come formato semplice gia' supportato dal codice.
+Questa proposta e' ora anche il formato richiesto per i file di configurazione.
+
+Stato attuale del parser:
+
+- `mode: periodic` supportato
+- `mode: molecule` supportato
+- `mode: qha-post` supportato
+- `mode: mixed` non ancora implementato
 
 ## Obiettivi
 
@@ -37,7 +44,7 @@ JSON puo' comunque restare supportato come alternativa tecnica.
 
 ```yaml
 schema_version: 2
-mode: periodic | molecule | mixed
+mode: periodic | molecule | mixed | qha-post
 
 model:
   path: /path/to/model.model
@@ -73,6 +80,10 @@ Propongo tre modalita':
 - `periodic`
 - `molecule`
 - `mixed`
+
+In piu', per il post-processing QHA il parser supporta anche:
+
+- `qha-post`
 
 ### `model`
 

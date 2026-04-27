@@ -1,22 +1,45 @@
-command: fixed-cell
-model_path: /path/to/mace.model
-device: cuda
+schema_version: 2
+mode: periodic
 
-geometry_file: structure.xyz
-formula_units: 4
+model:
+  path: /path/to/mace.model
+  device: cuda
 
-fmax: 0.01
-supercell: [5, 5, 5]
-delta: 0.05
-dos_kpts: [40, 40, 40]
-bandpath: GMKG
-emax: 0.035
+thermo:
+  temperature: 298.15
+  pressure: 0.0
 
-temperature: 298.15
-pressure: 0.0
+plots:
+  enabled: true
+  phonon_dos: true
+  band_structure: true
+  thermo_curves: true
+  format: png
+  dpi: 200
 
-t_min: 0.0
-t_max: 1000.0
-t_step: 50.0
+output:
+  dir: fixed_cell_results
+  write_summary: true
 
-output_dir: fixed_cell_results
+periodic:
+  kind: bulk
+
+  structure:
+    geometry_file: structure.xyz
+
+  formula_units: 4
+
+  relax:
+    fmax: 0.01
+
+  phonons:
+    supercell: [5, 5, 5]
+    delta: 0.05
+    dos_kpts: [40, 40, 40]
+    bandpath: GMKG
+    emax: 0.035
+
+  temperature_grid:
+    t_min: 0.0
+    t_max: 1000.0
+    t_step: 50.0

@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 
-CONFIG_COMMAND_KEYS = ("command", "workflow")
+CONFIG_COMMAND_KEYS = ("command",)
 PATH_LIKE_KEYS = {
     "geometry_file",
     "model_path",
@@ -48,7 +48,273 @@ def load_config_file(config_path):
     if not isinstance(data, dict):
         raise ValueError(f"Configuration file must contain a top-level mapping: {path}")
 
+    data = normalize_config_schema(data)
     return resolve_config_paths(data, path.parent)
+
+
+def normalize_config_schema(config):
+    """Normalize schema-version-2 configs to the flat CLI-oriented structure."""
+    config = dict(config)
+
+    schema_version = config.get("schema_version")
+    mode = config.get("mode")
+
+    if schema_version is None:
+        raise ValueError(
+            "Configuration files must define 'schema_version: 2'. Legacy flat configs are no longer supported."
+        )
+
+    if schema_version != 2:
+        raise ValueError(
+            f"Unsupported schema_version '{schema_version}'. Only schema_version: 2 is supported."
+        )
+
+    if mode is None:
+        raise ValueError("Schema version 2 config files must define 'mode'.")
+
+    if mode == "periodic":
+        return normalize_periodic_v2(config)
+
+    if mode == "molecule":
+        return normalize_molecule_v2(config)
+
+    if mode == "mixed":
+        raise ValueError(
+            "Schema version 2 for mode 'mixed' is planned but not implemented yet."
+        )
+
+    if mode in {"qha-post", "qha_post"}:
+        return normalize_qha_post_v2(config)
+
+    raise ValueError(
+        f"Unsupported mode '{mode}' in schema version 2 config."
+    )
+
+
+def normalize_periodic_v2(config):
+    """Normalize the nested schema-v2 periodic config into flat CLI keys."""
+    validate_allowed_keys(
+        config,
+        {"schema_version", "mode", "model", "thermo", "plots", "output", "periodic"},
+        "top-level periodic config",
+    )
+
+    model = require_mapping(config, "model")
+    periodic = require_mapping(config, "periodic")
+    thermo = optional_mapping(config, "thermo")
+    plots = optional_mapping(config, "plots")
+    output = optional_mapping(config, "output")
+    structure = require_mapping(periodic, "structure")
+    relax = optional_mapping(periodic, "relax")
+    phonons = optional_mapping(periodic, "phonons")
+    temperature_grid = optional_mapping(periodic, "temperature_grid")
+
+    validate_allowed_keys(model, {"path", "device"}, "model")
+    validate_allowed_keys(thermo, {"temperature", "pressure"}, "thermo")
+    validate_allowed_keys(
+        plots,
+        {"enabled", "phonon_dos", "band_structure", "thermo_curves", "format", "dpi"},
+        "plots",
+    )
+    validate_allowed_keys(output, {"dir", "write_summary"}, "output")
+    validate_allowed_keys(
+        periodic,
+        {"kind", "structure", "formula_units", "relax", "phonons", "temperature_grid"},
+        "periodic",
+    )
+    validate_allowed_keys(structure, {"geometry_file", "lattice_geometry", "lattice_basis"}, "periodic.structure")
+    validate_allowed_keys(relax, {"fmax"}, "periodic.relax")
+    validate_allowed_keys(
+        phonons,
+        {"supercell", "delta", "dos_kpts", "bandpath", "emax"},
+        "periodic.phonons",
+    )
+    validate_allowed_keys(
+        temperature_grid,
+        {"t_min", "t_max", "t_step"},
+        "periodic.temperature_grid",
+    )
+
+    kind = periodic.get("kind")
+    if kind not in {"bulk", "surface"}:
+        raise ValueError("periodic.kind must be either 'bulk' or 'surface'.")
+
+    if "geometry_file" in structure and (
+        "lattice_geometry" in structure or "lattice_basis" in structure
+    ):
+        raise ValueError(
+            "periodic.structure must define either geometry_file or lattice_geometry/lattice_basis, not both."
+        )
+
+    flat = {"command": "fixed-cell"}
+
+    copy_mapping(flat, model, {"path": "model_path", "device": "device"})
+    copy_mapping(flat, thermo, {"temperature": "temperature", "pressure": "pressure"})
+    copy_mapping(flat, output, {"dir": "output_dir"})
+    copy_mapping(
+        flat,
+        periodic,
+        {"formula_units": "formula_units"},
+    )
+    copy_mapping(flat, structure, {"geometry_file": "geometry_file"})
+
+    if "lattice_geometry" in structure:
+        flat["lattice_geometry"] = structure["lattice_geometry"]
+    if "lattice_basis" in structure:
+        flat["lattice_basis"] = structure["lattice_basis"]
+
+    if ("lattice_geometry" in structure) != ("lattice_basis" in structure):
+        raise ValueError(
+            "periodic.structure must define lattice_geometry and lattice_basis together."
+        )
+
+    copy_mapping(flat, relax, {"fmax": "fmax"})
+    copy_mapping(
+        flat,
+        phonons,
+        {
+            "supercell": "supercell",
+            "delta": "delta",
+            "dos_kpts": "dos_kpts",
+            "bandpath": "bandpath",
+            "emax": "emax",
+        },
+    )
+    copy_mapping(
+        flat,
+        temperature_grid,
+        {"t_min": "t_min", "t_max": "t_max", "t_step": "t_step"},
+    )
+
+    return flat
+
+
+def normalize_molecule_v2(config):
+    """Normalize the nested schema-v2 molecular config into flat CLI keys."""
+    validate_allowed_keys(
+        config,
+        {"schema_version", "mode", "model", "thermo", "plots", "output", "molecule"},
+        "top-level molecule config",
+    )
+
+    model = require_mapping(config, "model")
+    molecule = require_mapping(config, "molecule")
+    thermo = optional_mapping(config, "thermo")
+    plots = optional_mapping(config, "plots")
+    output = optional_mapping(config, "output")
+    relax = optional_mapping(molecule, "relax")
+    vibrations = optional_mapping(molecule, "vibrations")
+
+    validate_allowed_keys(model, {"path", "device"}, "model")
+    validate_allowed_keys(thermo, {"temperature", "pressure"}, "thermo")
+    validate_allowed_keys(
+        plots,
+        {"enabled", "phonon_dos", "band_structure", "thermo_curves", "format", "dpi"},
+        "plots",
+    )
+    validate_allowed_keys(output, {"dir", "write_summary"}, "output")
+    validate_allowed_keys(
+        molecule,
+        {
+            "geometry_file",
+            "mol_geometry",
+            "symmetry_number",
+            "spin",
+            "vacuum",
+            "relax",
+            "vibrations",
+        },
+        "molecule",
+    )
+    validate_allowed_keys(relax, {"fmax"}, "molecule.relax")
+    validate_allowed_keys(vibrations, {"clean"}, "molecule.vibrations")
+
+    flat = {"command": "molecule"}
+
+    copy_mapping(flat, model, {"path": "model_path", "device": "device"})
+    copy_mapping(flat, thermo, {"temperature": "temperature", "pressure": "pressure"})
+    copy_mapping(flat, output, {"dir": "output_dir"})
+    copy_mapping(
+        flat,
+        molecule,
+        {
+            "geometry_file": "geometry_file",
+            "mol_geometry": "mol_geometry",
+            "symmetry_number": "symmetry_number",
+            "spin": "spin",
+            "vacuum": "vacuum",
+        },
+    )
+    copy_mapping(flat, relax, {"fmax": "fmax"})
+
+    if "clean" in vibrations:
+        flat["clean_vib"] = vibrations["clean"]
+
+    return flat
+
+
+def normalize_qha_post_v2(config):
+    """Normalize the nested schema-v2 QHA post config into flat CLI keys."""
+    validate_allowed_keys(
+        config,
+        {"schema_version", "mode", "output", "qha_post"},
+        "top-level qha-post config",
+    )
+
+    output = optional_mapping(config, "output")
+    qha_post = require_mapping(config, "qha_post")
+
+    validate_allowed_keys(output, {"dir", "write_summary"}, "output")
+    validate_allowed_keys(
+        qha_post,
+        {"phonopy_qha", "qha_summary"},
+        "qha_post",
+    )
+
+    flat = {"command": "qha-post"}
+    copy_mapping(flat, output, {"dir": "output_dir"})
+    copy_mapping(
+        flat,
+        qha_post,
+        {
+            "phonopy_qha": "phonopy_qha",
+            "qha_summary": "qha_summary",
+        },
+    )
+    return flat
+
+
+def require_mapping(mapping, key):
+    """Return one required nested mapping from a config dictionary."""
+    value = mapping.get(key)
+    if not isinstance(value, dict):
+        raise ValueError(f"Config block '{key}' must be a mapping.")
+    return value
+
+
+def optional_mapping(mapping, key):
+    """Return one optional nested mapping from a config dictionary."""
+    value = mapping.get(key)
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise ValueError(f"Config block '{key}' must be a mapping.")
+    return value
+
+
+def validate_allowed_keys(mapping, allowed_keys, label):
+    """Validate that a mapping contains only known keys."""
+    unknown_keys = sorted(set(mapping) - set(allowed_keys))
+    if unknown_keys:
+        unknown_list = ", ".join(unknown_keys)
+        raise ValueError(f"Unknown key(s) in {label}: {unknown_list}")
+
+
+def copy_mapping(destination, source, key_map):
+    """Copy selected keys from one mapping into another."""
+    for source_key, destination_key in key_map.items():
+        if source_key in source:
+            destination[destination_key] = source[source_key]
 
 
 def resolve_config_paths(config, base_dir):

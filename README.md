@@ -92,37 +92,66 @@ Sono supportati:
 - file `.yaml` e `.yml`
 - file `.json`
 
-La struttura consigliata e' piatta: una chiave `command` che seleziona il workflow e poi chiavi con lo stesso nome delle opzioni CLI, ma con underscore invece dei trattini.
+I file di configurazione devono usare il nuovo schema annidato con:
+
+- `schema_version: 2`
+- `mode: periodic`, `mode: molecule`, `mode: qha-post` oppure `mode: mixed`
+
+Per ora il parser supporta:
+
+- `mode: periodic`
+- `mode: molecule`
+- `mode: qha-post`
+
+`mode: mixed` e' gia' definito nello schema, ma non ancora implementato nel parser.
 
 Esempio YAML:
 
 ```yaml
-command: fixed-cell
-model_path: /path/to/mace.model
-geometry_file: structure.xyz
-supercell: [5, 5, 5]
-dos_kpts: [40, 40, 40]
-temperature: 298.15
-pressure: 0.0
-output_dir: fixed_cell_results
+schema_version: 2
+mode: periodic
+
+model:
+  path: /path/to/mace.model
+  device: cuda
+
+thermo:
+  temperature: 298.15
+  pressure: 0.0
+
+output:
+  dir: fixed_cell_results
+
+periodic:
+  kind: bulk
+  structure:
+    geometry_file: structure.xyz
+  phonons:
+    supercell: [5, 5, 5]
+    dos_kpts: [40, 40, 40]
 ```
 
 Esempio JSON:
 
 ```json
 {
-  "command": "qha-post",
-  "phonopy_qha": "phonopy-qha.out",
-  "qha_summary": "qha_summary.out",
-  "output_dir": "qha_tables"
+  "schema_version": 2,
+  "mode": "qha-post",
+  "output": {
+    "dir": "qha_tables"
+  },
+  "qha_post": {
+    "phonopy_qha": "phonopy-qha.out",
+    "qha_summary": "qha_summary.out"
+  }
 }
 ```
 
 Nota pratica:
 
-- nel file di config usa `model_path`, non `model-path`
-- usa `command: fixed-cell`, `command: molecule` oppure `command: qha-post`
 - i path relativi nel file di config vengono interpretati rispetto alla cartella del config file
+- il parser normalizza internamente il file verso i workflow CLI esistenti
+- gli override da CLI restano volutamente semplici e usano chiavi flat interne, per esempio `temperature=500`
 
 Se vuoi cambiare solo uno o due parametri senza modificare il file, puoi usare override leggeri da riga di comando:
 

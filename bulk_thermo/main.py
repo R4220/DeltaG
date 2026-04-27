@@ -23,7 +23,7 @@ def build_bootstrap_parser():
     parser.add_argument(
         "--config",
         default=None,
-        help="Path to a JSON/YAML config file defining the workflow and its parameters.",
+        help="Path to a schema_version: 2 JSON/YAML config file defining the workflow and its parameters.",
     )
     parser.add_argument(
         "--override",

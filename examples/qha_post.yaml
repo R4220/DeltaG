@@ -1,4 +1,10 @@
-command: qha-post
-phonopy_qha: phonopy-qha.out
-qha_summary: qha_summary.out
-output_dir: qha_tables
+schema_version: 2
+mode: qha-post
+
+output:
+  dir: qha_tables
+  write_summary: true
+
+qha_post:
+  phonopy_qha: phonopy-qha.out
+  qha_summary: qha_summary.out
