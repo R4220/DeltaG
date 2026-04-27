@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deltaG"
+version = "0.1.0"
+description = "Thermochemistry workflows for bulk crystals, molecules, and QHA post-processing"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "ase",
+    "PyYAML",
+]
+
+[project.scripts]
+deltaG = "bulk_thermo.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bulk_thermo*"]

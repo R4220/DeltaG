@@ -1,0 +1,17 @@
+command: molecule
+model_path: /path/to/mace.model
+device: cuda
+
+geometry_file: molecule.xyz
+mol_geometry: nonlinear
+symmetry_number: 1
+spin: 0.0
+
+vacuum: 15.0
+fmax: 0.01
+
+temperature: 298.15
+pressure: 101325.0
+
+output_dir: molecule_results
+clean_vib: false
