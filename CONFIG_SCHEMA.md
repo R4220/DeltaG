@@ -43,7 +43,6 @@ JSON puo' comunque restare supportato come alternativa tecnica.
 ## Struttura top-level proposta
 
 ```yaml
-schema_version: 2
 mode: periodic | molecule | mixed | qha-post
 
 model:
@@ -68,10 +67,6 @@ output:
 ```
 
 ## Significato dei blocchi comuni
-
-### `schema_version`
-
-Serve a gestire l'evoluzione futura del formato senza ambiguita'.
 
 ### `mode`
 
@@ -296,7 +291,6 @@ Con questa struttura:
 ## Esempio completo 1: periodic bulk
 
 ```yaml
-schema_version: 2
 mode: periodic
 
 model:
@@ -345,7 +339,6 @@ periodic:
 ## Esempio completo 2: molecule
 
 ```yaml
-schema_version: 2
 mode: molecule
 
 model:
@@ -380,7 +373,6 @@ molecule:
 ## Esempio completo 3: mixed adsorption
 
 ```yaml
-schema_version: 2
 mode: mixed
 
 model:

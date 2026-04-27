@@ -53,49 +53,34 @@ def load_config_file(config_path):
 
 
 def normalize_config_schema(config):
-    """Normalize schema-version-2 configs to the flat CLI-oriented structure."""
+    """Normalize nested configs to the flat CLI-oriented structure."""
     config = dict(config)
-
-    schema_version = config.get("schema_version")
+    config.pop("schema_version", None)
     mode = config.get("mode")
 
-    if schema_version is None:
-        raise ValueError(
-            "Configuration files must define 'schema_version: 2'. Legacy flat configs are no longer supported."
-        )
-
-    if schema_version != 2:
-        raise ValueError(
-            f"Unsupported schema_version '{schema_version}'. Only schema_version: 2 is supported."
-        )
-
     if mode is None:
-        raise ValueError("Schema version 2 config files must define 'mode'.")
+        raise ValueError("Configuration files must define 'mode'.")
 
     if mode == "periodic":
-        return normalize_periodic_v2(config)
+        return normalize_periodic_config(config)
 
     if mode == "molecule":
-        return normalize_molecule_v2(config)
+        return normalize_molecule_config(config)
 
     if mode == "mixed":
-        raise ValueError(
-            "Schema version 2 for mode 'mixed' is planned but not implemented yet."
-        )
+        raise ValueError("Mode 'mixed' is planned but not implemented yet.")
 
     if mode in {"qha-post", "qha_post"}:
-        return normalize_qha_post_v2(config)
+        return normalize_qha_post_config(config)
 
-    raise ValueError(
-        f"Unsupported mode '{mode}' in schema version 2 config."
-    )
+    raise ValueError(f"Unsupported mode '{mode}' in config file.")
 
 
-def normalize_periodic_v2(config):
-    """Normalize the nested schema-v2 periodic config into flat CLI keys."""
+def normalize_periodic_config(config):
+    """Normalize the nested periodic config into flat CLI keys."""
     validate_allowed_keys(
         config,
-        {"schema_version", "mode", "model", "thermo", "plots", "output", "periodic"},
+        {"mode", "model", "thermo", "plots", "output", "periodic"},
         "top-level periodic config",
     )
 
@@ -189,11 +174,11 @@ def normalize_periodic_v2(config):
     return flat
 
 
-def normalize_molecule_v2(config):
-    """Normalize the nested schema-v2 molecular config into flat CLI keys."""
+def normalize_molecule_config(config):
+    """Normalize the nested molecular config into flat CLI keys."""
     validate_allowed_keys(
         config,
-        {"schema_version", "mode", "model", "thermo", "plots", "output", "molecule"},
+        {"mode", "model", "thermo", "plots", "output", "molecule"},
         "top-level molecule config",
     )
 
@@ -253,11 +238,11 @@ def normalize_molecule_v2(config):
     return flat
 
 
-def normalize_qha_post_v2(config):
-    """Normalize the nested schema-v2 QHA post config into flat CLI keys."""
+def normalize_qha_post_config(config):
+    """Normalize the nested QHA post config into flat CLI keys."""
     validate_allowed_keys(
         config,
-        {"schema_version", "mode", "output", "qha_post"},
+        {"mode", "output", "qha_post"},
         "top-level qha-post config",
     )
 

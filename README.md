@@ -12,7 +12,7 @@ Al momento il progetto copre tre casi d'uso principali:
 
 Il codice e' gia' utilizzabile come prototipo locale, ma e' ancora in fase di consolidamento come pacchetto autosufficiente. La roadmap di sviluppo e' in:
 
-- [bulk_thermo/ROADMAP.md](./bulk_thermo/ROADMAP.md)
+- [Gibbs_energy/ROADMAP.md](./Gibbs_energy/ROADMAP.md)
 
 ## Struttura attuale
 
@@ -20,7 +20,7 @@ Il codice e' gia' utilizzabile come prototipo locale, ma e' ancora in fase di co
 DeltaG/
 ├── pyproject.toml
 ├── README.md
-└── bulk_thermo/
+└── Gibbs_energy/
     ├── __init__.py
     ├── __main__.py
     ├── main.py
@@ -35,7 +35,7 @@ DeltaG/
     └── ROADMAP.md
 ```
 
-Nota: il nome del progetto installabile e del comando CLI e' `deltaG`, mentre il nome del pacchetto Python interno e' ancora `bulk_thermo`.
+Nota: il nome del progetto installabile e del comando CLI e' `deltaG`, mentre il nome del pacchetto Python interno e' `Gibbs_energy`.
 
 ## Requisiti
 
@@ -44,7 +44,7 @@ Nota: il nome del progetto installabile e del comando CLI e' `deltaG`, mentre il
 - `matplotlib`
 - `ase`
 
-Per i workflow che usano il calcolatore MACE serve anche un ambiente con `mace-torch` disponibile, perche' [bulk_thermo/calculators.py](./bulk_thermo/calculators.py) usa `MACECalculator`.
+Per i workflow che usano il calcolatore MACE serve anche un ambiente con `mace-torch` disponibile, perche' [Gibbs_energy/calculators.py](./Gibbs_energy/calculators.py) usa `MACECalculator`.
 
 Il workflow `qha-post` invece non richiede MACE.
 
@@ -76,7 +76,7 @@ deltaG --help
 oppure, in alternativa:
 
 ```bash
-python -m bulk_thermo --help
+python -m Gibbs_energy --help
 ```
 
 ## File di configurazione JSON/YAML
@@ -92,9 +92,8 @@ Sono supportati:
 - file `.yaml` e `.yml`
 - file `.json`
 
-I file di configurazione devono usare il nuovo schema annidato con:
+I file di configurazione devono usare la struttura annidata con:
 
-- `schema_version: 2`
 - `mode: periodic`, `mode: molecule`, `mode: qha-post` oppure `mode: mixed`
 
 Per ora il parser supporta:
@@ -108,7 +107,6 @@ Per ora il parser supporta:
 Esempio YAML:
 
 ```yaml
-schema_version: 2
 mode: periodic
 
 model:
@@ -135,7 +133,6 @@ Esempio JSON:
 
 ```json
 {
-  "schema_version": 2,
   "mode": "qha-post",
   "output": {
     "dir": "qha_tables"
@@ -285,7 +282,7 @@ Output tipici:
 
 L'idea e' mantenere separati:
 
-- il livello CLI in [bulk_thermo/main.py](./bulk_thermo/main.py);
+- il livello CLI in [Gibbs_energy/main.py](./Gibbs_energy/main.py);
 - i workflow scientifici principali;
 - i moduli di supporto per strutture, I/O e costanti.
 

@@ -1,4 +1,4 @@
-"""Package entry point for ``python -m bulk_thermo``."""
+"""Package entry point for ``python -m Gibbs_energy``."""
 
 from .main import main
 

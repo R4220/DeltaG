@@ -1,4 +1,4 @@
-# bulk_thermo roadmap
+# Gibbs_energy roadmap
 
 ## Obiettivo
 Trasformare questa cartella in un piccolo programma autosufficiente per termochimica con tre workflow:

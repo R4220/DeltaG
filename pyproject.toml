@@ -15,8 +15,8 @@ dependencies = [
 ]
 
 [project.scripts]
-deltaG = "bulk_thermo.main:main"
+deltaG = "Gibbs_energy.main:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["bulk_thermo*"]
+include = ["Gibbs_energy*"]
