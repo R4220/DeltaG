@@ -1,17 +1,19 @@
 # Gibbs_energy roadmap
 
 ## Obiettivo
-Trasformare questa cartella in un piccolo programma autosufficiente per termochimica con tre workflow:
+Trasformare questa cartella in un piccolo programma autosufficiente per termochimica con quattro workflow:
 
 - bulk armonico a cella fissa;
+- patch finite in vuoto con termodinamica armonica vibrazionale;
 - termochimica di molecole isolate in approssimazione di gas ideale;
 - post-processing QHA.
 
 ## Stato attuale
 La struttura del codice e gia' abbastanza buona:
 
-- `main.py` espone una CLI con tre sottocomandi;
+- `main.py` espone una CLI con quattro sottocomandi;
 - `thermo_bulk.py` contiene il workflow bulk;
+- `patch_thermo.py` contiene il workflow patch;
 - `molecule_thermo.py` contiene il workflow molecolare;
 - `qha_post.py` contiene il post-processing QHA;
 - `structures.py`, `calculators.py`, `io_utils.py`, `constants.py` fanno da supporto.

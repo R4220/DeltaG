@@ -274,14 +274,18 @@ def run_bulk(args):
 
     cell_formula, reduced_formula = formula_strings(atoms, formula_units)
 
-    output_lines = [
-        "# Bulk harmonic thermochemistry report",
-        "",
-        "[System]",
+    system_lines = [
         f"Geometry file              : {args.geometry_file}",
         f"Relaxed cell formula       : {cell_formula}",
         f"Reduced formula unit       : {reduced_formula}",
         f"Formula units in cell      : {formula_units}",
+    ]
+
+    output_lines = [
+        "# Bulk harmonic thermochemistry report",
+        "",
+        "[System]",
+        *system_lines,
         "",
         "[Settings]",
         f"Model path                 : {args.model_path}",

@@ -1,0 +1,35 @@
+mode: patch
+
+model:
+  path: /path/to/mace.model
+  device: cuda
+
+thermo:
+  temperature: 298.15
+
+plots:
+  enabled: false
+
+output:
+  dir: patch_results
+  write_summary: true
+
+patch:
+  geometry_file: patch.xyz
+  vacuum: 15.0
+
+  relax:
+    fmax: 0.01
+
+  constraints:
+    fixed_indices: [0, 1, 2, 3]
+
+  vibrations:
+    indices: [4, 5, 6, 7]
+    delta: 0.01
+    clean: false
+
+  temperature_grid:
+    t_min: 0.0
+    t_max: 1000.0
+    t_step: 50.0

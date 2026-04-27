@@ -2,9 +2,10 @@
 
 Piccolo toolkit Python per workflow di termochimica atomistica basati su ASE.
 
-Al momento il progetto copre tre casi d'uso principali:
+Al momento il progetto copre quattro casi d'uso principali:
 
 - bulk armonico a cella fissa con phonons e termodinamica;
+- patch finite in vuoto con termodinamica armonica vibrazionale;
 - termochimica di molecole isolate in approssimazione di gas ideale;
 - post-processing di output `phonopy-qha`.
 
@@ -28,6 +29,7 @@ DeltaG/
     ├── structures.py
     ├── phonons_bulk.py
     ├── thermo_bulk.py
+    ├── patch_thermo.py
     ├── molecule_thermo.py
     ├── qha_post.py
     ├── io_utils.py
@@ -94,11 +96,12 @@ Sono supportati:
 
 I file di configurazione devono usare la struttura annidata con:
 
-- `mode: periodic`, `mode: molecule`, `mode: qha-post` oppure `mode: mixed`
+- `mode: periodic`, `mode: patch`, `mode: molecule`, `mode: qha-post` oppure `mode: mixed`
 
 Per ora il parser supporta:
 
 - `mode: periodic`
+- `mode: patch`
 - `mode: molecule`
 - `mode: qha-post`
 
@@ -174,6 +177,7 @@ deltaG --config examples/bulk.yaml \
 Esempi pronti sono disponibili in:
 
 - [examples/bulk.yaml](./examples/bulk.yaml)
+- [examples/patch.yaml](./examples/patch.yaml)
 - [examples/molecule.yaml](./examples/molecule.yaml)
 - [examples/qha_post.yaml](./examples/qha_post.yaml)
 
@@ -220,7 +224,46 @@ Output tipici:
 Se `qha.enabled: true`, vengono scritte anche le tabelle QHA nella cartella
 indicata da `qha.output_dir` oppure, di default, in `bulk_results/qha_tables`.
 
-### 2. `molecule`
+### 2. `patch`
+
+Calcola termodinamica armonica per un frammento finito in vuoto:
+
+- costruzione della scatola di vuoto;
+- vincoli opzionali su atomi di bordo;
+- rilassamento geometrico;
+- vibrazioni a spostamenti finiti sugli atomi scelti;
+- energia interna, entropia e Helmholtz armonica in funzione della temperatura.
+
+Questo workflow non usa `IdealGasThermo`: non aggiunge termini
+traslazionali/rotazionali di gas ideale. E' pensato per patch, frammenti
+supportati o cluster trattati come oggetti vincolati.
+
+Help rapido:
+
+```bash
+deltaG patch --help
+```
+
+Esempio minimale:
+
+```bash
+deltaG patch \
+  --model-path /path/to/model.model \
+  --geometry-file patch.xyz \
+  --output-dir patch_results
+```
+
+Output tipici:
+
+- `initial_patch.xyz`
+- `relaxed_patch.xyz`
+- `relax_patch.log`
+- `relax_patch.traj`
+- `vibrations_summary.txt`
+- `patch_thermo_temperature.dat`
+- `patch_thermo_summary.out`
+
+### 3. `molecule`
 
 Calcola termochimica di una molecola isolata con `IdealGasThermo`:
 
@@ -255,7 +298,7 @@ Output tipici:
 - `vibrations_summary.txt`
 - `molecule_thermo_summary.out`
 
-### 3. `qha-post`
+### 4. `qha-post`
 
 Post-processa un file `phonopy-qha.out` e costruisce tabelle termodinamiche utili.
 
@@ -306,6 +349,7 @@ Questo dovrebbe rendere piu' semplice:
 ## Limitazioni attuali
 
 - `bulk` non include espansione termica: per quello serve la QHA.
+- `patch` usa solo contributi armonici vibrazionali: non include termini di gas ideale.
 - `molecule` e' appropriato per molecole isolate in fase gas, non per specie adsorbite.
 - L'installazione di `mace-torch` puo' dipendere dall'ambiente di calcolo.
 - Non ci sono ancora test automatici e casi esempio completi inclusi nel repository.

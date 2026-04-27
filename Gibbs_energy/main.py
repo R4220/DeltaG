@@ -1,8 +1,9 @@
 """Command-line interface for the thermochemistry mini-toolkit.
 
-The current CLI exposes three independent workflows:
+The current CLI exposes four independent workflows:
 
 - ``bulk`` for harmonic bulk thermodynamics at fixed volume/cell;
+- ``patch`` for harmonic thermodynamics of finite fragments in vacuum;
 - ``molecule`` for ideal-gas thermochemistry of isolated molecules;
 - ``qha-post`` for post-processing external phonopy-QHA results.
 """
@@ -11,6 +12,7 @@ import argparse
 import json
 
 from .config_utils import apply_overrides, build_argv_from_config, load_config_file
+from .patch_thermo import run_patch
 from .qha_post import run_qha_post
 from .thermo_bulk import run_bulk
 from .molecule_thermo import run_molecule
@@ -71,6 +73,12 @@ def add_bulk_parser(subparsers):
         type=int,
         default=None,
         help="Formula units in the simulation cell. If omitted, inferred automatically.",
+    )
+    parser.add_argument(
+        "--kind",
+        default="bulk",
+        choices=["bulk", "surface"],
+        help="Periodic system kind: bulk or surface.",
     )
 
     parser.add_argument("--fmax", type=float, default=0.01, help="Relaxation force threshold eV/A.")
@@ -140,6 +148,64 @@ def add_qha_post_parser(subparsers):
     parser.set_defaults(func=run_qha_post)
 
 
+def add_patch_parser(subparsers):
+    """Add command-line options for harmonic patch thermochemistry."""
+    parser = subparsers.add_parser(
+        "patch",
+        help="Run harmonic thermochemistry for a finite patch in vacuum.",
+    )
+
+    parser.add_argument("--model-path", required=True, help="Path to the MACE model.")
+    parser.add_argument("--device", default="cuda", help="Device used by MACE: cuda or cpu.")
+
+    parser.add_argument(
+        "--geometry-file",
+        required=True,
+        help="Finite structure file readable by ASE.",
+    )
+
+    parser.add_argument(
+        "--vacuum",
+        type=float,
+        default=15.0,
+        help="Vacuum padding added around the finite structure in Angstrom.",
+    )
+
+    parser.add_argument(
+        "--fixed-indices",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Optional 0-based atom indices kept fixed during relaxation and vibrations.",
+    )
+
+    parser.add_argument(
+        "--vibration-indices",
+        type=int,
+        nargs="+",
+        default=None,
+        help="Optional 0-based atom indices included in the finite-displacement vibrational analysis.",
+    )
+
+    parser.add_argument("--fmax", type=float, default=0.01, help="Relaxation force threshold eV/A.")
+    parser.add_argument("--delta", type=float, default=0.01, help="Finite displacement in A for vibrations.")
+
+    parser.add_argument("--temperature", type=float, default=298.15)
+    parser.add_argument("--t-min", type=float, default=0.0)
+    parser.add_argument("--t-max", type=float, default=1000.0)
+    parser.add_argument("--t-step", type=float, default=50.0)
+
+    parser.add_argument("--output-dir", default="patch_results")
+
+    parser.add_argument(
+        "--clean-vib",
+        action="store_true",
+        help="Remove ASE vibration displacement files after calculation.",
+    )
+
+    parser.set_defaults(func=run_patch)
+
+
 def add_molecule_parser(subparsers):
     """Add command-line options for ideal-gas molecular thermochemistry."""
     parser = subparsers.add_parser(
@@ -202,13 +268,14 @@ def build_workflow_parser(bootstrap_parser):
     """Build the main workflow parser used by both direct CLI and config mode."""
     parser = argparse.ArgumentParser(
         parents=[bootstrap_parser],
-        description="Bulk thermochemistry workflows: bulk ASE/MACE and QHA post-processing."
+        description="Thermochemistry workflows for bulk crystals, finite patches, molecules, and QHA post-processing."
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Each subparser defines one scientific workflow with its own parameters.
     add_bulk_parser(subparsers)
+    add_patch_parser(subparsers)
     add_qha_post_parser(subparsers)
     add_molecule_parser(subparsers)
 

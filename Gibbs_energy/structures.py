@@ -57,7 +57,6 @@ def build_structure(args, calculator):
 
     return setup_crystal(args.lattice_geometry, args.lattice_basis, calculator)
 
-
 def infer_formula_units(atoms):
     """Infer the number of reduced formula units in the simulation cell.
 

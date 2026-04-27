@@ -1,12 +1,57 @@
+# Deve essere periodic, altrimenti non entra nel workflow bulk
 mode: periodic
 
+# MACE model configuration
 model:
   path: /path/to/mace.model
-  device: cuda
+  device: cuda                  # default: cuda, options: cpu, cuda
 
+# Thermodynamic conditions
 thermo:
-  temperature: 298.15
-  pressure: 0.0
+  temperature: 298.15           # default: 298.15 K
+  pressure: 0.0                 # default: 0.0 GPa       
+
+# Output configuration
+output:
+  dir: bulk_results
+  write_summary: true
+
+# PERIODIC CALCULATIONS
+
+periodic:
+  kind: bulk                          # Deve essere bulk o surface
+
+  structure:
+    geometry_file: structure.xyz
+
+  formula_units: 4                    # Numero di unità formula nella cella, necessario per calcolare le energie per unità formula (default: se la calcola in automatico)
+
+  relax:
+    fmax: 0.01
+
+  phonons:
+    supercell: [5, 5, 5]              # Supercella per i fononi a spostamenti finiti
+    delta: 0.05                       # Spostamento per i fononi a spostamenti finiti (default: 0.05 Å)       
+    dos_kpts: [40, 40, 40]            # Griglia di k-points per il calcolo della densità di stati fononica (default: [40, 40, 40])
+    bandpath: GMKG                    # Percorso per la struttura a bande fononica, es. GMKG (Gamma-M-K-Gamma)
+    emax: 0.035                       # Energia massima per la struttura a bande fononica in eV (default: 0.035 eV)    
+
+  temperature_grid:                   
+    t_min: 0.0                        # Temperatura minima per il calcolo delle proprietà termodinamiche (default: 0.0 K)
+    t_max: 1000.0                     # Temperatura massima per il calcolo delle proprietà termodinamiche (default: 1000.0 K)         
+    t_step: 50.0                      # Passo di temperatura per il calcolo delle proprietà termodinamiche (default: 50.0 K)         
+
+
+# QUASI-HARMONIC APPROXIMATION (QHA)
+
+qha:
+  enabled: false
+  phonopy_qha: phonopy-qha.out
+  qha_summary: qha_summary.out
+  output_dir: qha_tables
+
+
+# PLOTS
 
 plots:
   enabled: true
@@ -15,36 +60,3 @@ plots:
   thermo_curves: true
   format: png
   dpi: 200
-
-output:
-  dir: bulk_results
-  write_summary: true
-
-qha:
-  enabled: false
-  phonopy_qha: phonopy-qha.out
-  qha_summary: qha_summary.out
-  output_dir: qha_tables
-
-periodic:
-  kind: bulk
-
-  structure:
-    geometry_file: structure.xyz
-
-  formula_units: 4
-
-  relax:
-    fmax: 0.01
-
-  phonons:
-    supercell: [5, 5, 5]
-    delta: 0.05
-    dos_kpts: [40, 40, 40]
-    bandpath: GMKG
-    emax: 0.035
-
-  temperature_grid:
-    t_min: 0.0
-    t_max: 1000.0
-    t_step: 50.0

@@ -14,6 +14,7 @@ Questa proposta e' ora anche il formato richiesto per i file di configurazione.
 Stato attuale del parser:
 
 - `mode: periodic` supportato
+- `mode: patch` supportato
 - `mode: molecule` supportato
 - `mode: qha-post` supportato
 - `mode: mixed` non ancora implementato
@@ -25,7 +26,7 @@ Lo schema dovrebbe:
 - essere leggibile a mano;
 - evitare command line troppo lunghe;
 - distinguere bene tra input comuni e input specifici del workflow;
-- gestire in modo naturale sistemi `bulk`, `surface`, `molecule` e `mixed`;
+- gestire in modo naturale sistemi `bulk`, `surface`, `patch`, `molecule` e `mixed`;
 - rendere facile aggiungere nuovi workflow in futuro.
 
 ## Scelta consigliata
@@ -43,7 +44,7 @@ JSON puo' comunque restare supportato come alternativa tecnica.
 ## Struttura top-level proposta
 
 ```yaml
-mode: periodic | molecule | mixed | qha-post
+mode: periodic | patch | molecule | mixed | qha-post
 
 model:
   path: /path/to/model.model
@@ -74,9 +75,10 @@ esistente.
 
 ### `mode`
 
-Propongo tre modalita':
+Propongo quattro modalita':
 
 - `periodic`
+- `patch`
 - `molecule`
 - `mixed`
 
@@ -215,7 +217,44 @@ structure:
       position: [0.333333, 0.666667, 0.25]
 ```
 
-## Modalita' 2: `molecule`
+## Modalita' 2: `patch`
+
+Questa modalita' e' per frammenti finiti in vuoto trattati con
+`HarmonicThermo`, senza contributi di gas ideale.
+
+### Blocchi consigliati
+
+```yaml
+mode: patch
+
+patch:
+  geometry_file: patch.xyz
+  vacuum: 15.0
+
+  relax:
+    fmax: 0.01
+
+  constraints:
+    fixed_indices: [0, 1, 2, 3]
+
+  vibrations:
+    indices: [4, 5, 6, 7]
+    delta: 0.01
+    clean: false
+
+  temperature_grid:
+    t_min: 0.0
+    t_max: 1000.0
+    t_step: 50.0
+```
+
+### Nota concettuale
+
+Qui non va usato `IdealGasThermo`: il workflow aggiunge solo contributi
+vibrazionali armonici. Se il frammento rappresenta una patch supportata,
+conviene fissare alcuni atomi di bordo oppure limitare gli atomi vibrati.
+
+## Modalita' 3: `molecule`
 
 Questa modalita' e' per molecole isolate e termochimica tipo `IdealGasThermo`.
 
@@ -242,7 +281,7 @@ molecule:
 
 Qui non userei `bulk/surface/molecule` come singola categoria, perche' la fisica e il workflow molecolare sono davvero diversi.
 
-## Modalita' 3: `mixed`
+## Modalita' 4: `mixed`
 
 Questa e' la parte piu' importante della tua idea.
 

@@ -68,6 +68,9 @@ def normalize_config_schema(config):
     if mode == "molecule":
         return normalize_molecule_config(config)
 
+    if mode == "patch":
+        return normalize_patch_config(config)
+
     if mode == "mixed":
         raise ValueError("Mode 'mixed' is planned but not implemented yet.")
 
@@ -152,7 +155,10 @@ def normalize_periodic_config(config):
     copy_mapping(
         flat,
         periodic,
-        {"formula_units": "formula_units"},
+        {
+            "kind": "kind",
+            "formula_units": "formula_units",
+        },
     )
     copy_mapping(flat, structure, {"geometry_file": "geometry_file"})
 
@@ -244,6 +250,74 @@ def normalize_molecule_config(config):
         },
     )
     copy_mapping(flat, relax, {"fmax": "fmax"})
+
+    if "clean" in vibrations:
+        flat["clean_vib"] = vibrations["clean"]
+
+    return flat
+
+
+def normalize_patch_config(config):
+    """Normalize the nested patch config into flat CLI keys."""
+    validate_allowed_keys(
+        config,
+        {"mode", "model", "thermo", "plots", "output", "patch"},
+        "top-level patch config",
+    )
+
+    model = require_mapping(config, "model")
+    patch = require_mapping(config, "patch")
+    thermo = optional_mapping(config, "thermo")
+    plots = optional_mapping(config, "plots")
+    output = optional_mapping(config, "output")
+    relax = optional_mapping(patch, "relax")
+    constraints = optional_mapping(patch, "constraints")
+    vibrations = optional_mapping(patch, "vibrations")
+    temperature_grid = optional_mapping(patch, "temperature_grid")
+
+    validate_allowed_keys(model, {"path", "device"}, "model")
+    validate_allowed_keys(thermo, {"temperature"}, "thermo")
+    validate_allowed_keys(
+        plots,
+        {"enabled", "phonon_dos", "band_structure", "thermo_curves", "format", "dpi"},
+        "plots",
+    )
+    validate_allowed_keys(output, {"dir", "write_summary"}, "output")
+    validate_allowed_keys(
+        patch,
+        {"geometry_file", "vacuum", "relax", "constraints", "vibrations", "temperature_grid"},
+        "patch",
+    )
+    validate_allowed_keys(relax, {"fmax"}, "patch.relax")
+    validate_allowed_keys(constraints, {"fixed_indices"}, "patch.constraints")
+    validate_allowed_keys(vibrations, {"indices", "delta", "clean"}, "patch.vibrations")
+    validate_allowed_keys(
+        temperature_grid,
+        {"t_min", "t_max", "t_step"},
+        "patch.temperature_grid",
+    )
+
+    flat = {"command": "patch"}
+
+    copy_mapping(flat, model, {"path": "model_path", "device": "device"})
+    copy_mapping(flat, thermo, {"temperature": "temperature"})
+    copy_mapping(flat, output, {"dir": "output_dir"})
+    copy_mapping(flat, patch, {"geometry_file": "geometry_file", "vacuum": "vacuum"})
+    copy_mapping(flat, relax, {"fmax": "fmax"})
+    copy_mapping(flat, constraints, {"fixed_indices": "fixed_indices"})
+    copy_mapping(
+        flat,
+        vibrations,
+        {
+            "indices": "vibration_indices",
+            "delta": "delta",
+        },
+    )
+    copy_mapping(
+        flat,
+        temperature_grid,
+        {"t_min": "t_min", "t_max": "t_max", "t_step": "t_step"},
+    )
 
     if "clean" in vibrations:
         flat["clean_vib"] = vibrations["clean"]
